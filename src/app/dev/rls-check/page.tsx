@@ -1,0 +1,23 @@
+"use client";
+import { useState } from "react";
+import { createSupabaseBrowserClient } from "@/core/supabase/browser";
+
+type Result = { label: string; status: "PASS" | "FAIL" | "미검증"; detail: string };
+type Profile = { user_id: string; nickname: string; timezone: string; week_starts_on: string };
+
+export default function RlsCheckPage() {
+  const [otherId, setOtherId] = useState(""); const [userId, setUserId] = useState(""); const [profile, setProfile] = useState<Profile | null>(null); const [results, setResults] = useState<Result[]>([]); const [error, setError] = useState(""); const [running, setRunning] = useState(false);
+  if (process.env.NODE_ENV !== "development") return <main className="p-8">Not Found</main>;
+  async function run() {
+    setRunning(true); setResults([]); setError(""); const supabase = createSupabaseBrowserClient(); const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) { setError("로그인된 세션이 없습니다."); setRunning(false); return; } setUserId(user.id);
+    if (!otherId || otherId === user.id) { setError("현재 사용자와 다른 상대 user_id를 입력해 주세요."); setRunning(false); return; }
+    const output: Result[] = []; const own = await supabase.from("profiles").select("user_id,nickname,timezone,week_starts_on").eq("user_id", user.id).maybeSingle(); setProfile(own.data);
+    output.push({ label: "자신의 프로필 SELECT", status: !own.error && !!own.data ? "PASS" : "FAIL", detail: own.error?.message ?? (own.data ? "조회됨" : "프로필 없음") });
+    if (own.data) { const original = own.data.nickname; const marker = `__rls_check_${Date.now()}`; const changed = await supabase.from("profiles").update({ nickname: marker }).eq("user_id", user.id).select("user_id,nickname").maybeSingle(); const restored = await supabase.from("profiles").update({ nickname: original }).eq("user_id", user.id).select("user_id,nickname").maybeSingle(); output.push({ label: "자신의 프로필 UPDATE 및 복구", status: !changed.error && !!changed.data && !restored.error && restored.data?.nickname === original ? "PASS" : "FAIL", detail: changed.error?.message ?? restored.error?.message ?? "임시값 적용 후 원래 값으로 복구됨" }); } else output.push({ label: "자신의 프로필 UPDATE 및 복구", status: "미검증", detail: "자신의 프로필이 없어 실행하지 않음" });
+    const other = await supabase.from("profiles").select("user_id").eq("user_id", otherId).maybeSingle(); output.push({ label: "상대 프로필 SELECT 차단", status: !other.error && !other.data ? "PASS" : "FAIL", detail: other.error?.message ?? (other.data ? "상대 프로필 반환됨" : "반환되지 않음") });
+    const update = await supabase.from("profiles").update({ nickname: "__must_not_change__" }).eq("user_id", otherId).select("user_id").maybeSingle(); output.push({ label: "상대 프로필 UPDATE 차단", status: !update.error && !update.data ? "PASS" : "FAIL", detail: update.error?.message ?? (update.data ? "UPDATE 결과 반환됨" : "대상 반환되지 않음") });
+    const deletion = await supabase.from("profiles").delete().eq("user_id", otherId).select("user_id").maybeSingle(); output.push({ label: "상대 프로필 DELETE 차단", status: !deletion.error && !deletion.data ? "PASS" : "FAIL", detail: deletion.error?.message ?? (deletion.data ? "DELETE 결과 반환됨" : "대상 반환되지 않음") }); setResults(output); setRunning(false);
+  }
+  return <main className="mx-auto min-h-screen max-w-2xl bg-[#fffaf0] px-4 py-8 text-stone-900"><p className="text-sm font-semibold text-stone-500">개발 전용 · RLS 검증</p><h1 className="mt-2 text-3xl font-semibold">사용자 간 접근 차단 테스트</h1><p className="mt-3 text-sm text-stone-600">현재 브라우저의 Supabase 세션만 사용합니다. 테스트 후 이 화면과 관련 파일을 제거하세요.</p><div className="mt-8 space-y-4 rounded-2xl bg-white p-5 shadow-sm"><p className="text-sm font-medium">현재 사용자 ID</p><code className="block break-all rounded bg-stone-100 p-3 text-xs">{userId || "실행 후 표시"}</code><label className="block text-sm font-medium">상대 사용자 ID<input className="mt-2 w-full rounded-xl border p-3" value={otherId} onChange={(e) => setOtherId(e.target.value)} /></label><button type="button" disabled={running} onClick={run} className="w-full rounded-xl bg-stone-900 p-3 text-white disabled:opacity-50">{running ? "검증 중…" : "RLS 검증 실행"}</button>{error ? <p role="alert" className="rounded bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}</div>{profile ? <pre className="mt-4 overflow-auto rounded-2xl bg-white p-5 text-xs shadow-sm">{JSON.stringify(profile, null, 2)}</pre> : null}<div className="mt-4 space-y-3">{results.map((r) => <div key={r.label} className="rounded-2xl bg-white p-4 shadow-sm"><div className="flex justify-between gap-3"><span>{r.label}</span><strong className={r.status === "PASS" ? "text-emerald-700" : r.status === "FAIL" ? "text-red-700" : "text-stone-500"}>{r.status}</strong></div><p className="mt-2 text-sm text-stone-600">{r.detail}</p></div>)}</div></main>;
+}
