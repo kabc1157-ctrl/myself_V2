@@ -5,7 +5,6 @@ import {
 } from "./questions";
 import {
   calculatePersonalityScores,
-  type DimensionResult,
   type PersonalityScoringResult,
   type ScoreBand,
 } from "./scoring";
@@ -92,7 +91,9 @@ export type PersonalityReportBundle = {
 
 const CAUTION = "이음새 내부 자기이해를 위한 예비 검사입니다. 점수는 문항에 대한 동의 정도이며 표준화된 성격 수준, 타인과 비교한 백분위 또는 정신건강 진단이 아닙니다. 실제 생활 기록을 통해 함께 살펴보세요.";
 
-const INDEX = new Map(PERSONALITY_DIMENSIONS.map((key, index) => [key, index]));
+const INDEX = new Map<PersonalityDimension, number>(
+  PERSONALITY_DIMENSIONS.map((key, index) => [key, index] as const),
+);
 
 function explainDimension(
   dimension: PersonalityDimension,
@@ -247,6 +248,7 @@ function getStrategies(scores: PersonalityScoringResult): PersonalityReportStrat
 export function createPersonalityReport(answers: unknown): PersonalityReportBundle {
   const scores = calculatePersonalityScores(answers);
   const prominent = prominentDimensions(scores);
+  const summary = buildSummary(scores, prominent);
   const explain = (key: PersonalityDimension) => explainDimension(key, scores);
 
   const report: PersonalityReport = {
@@ -257,9 +259,9 @@ export function createPersonalityReport(answers: unknown): PersonalityReportBund
     generatedBy: "predefined_rules",
     aiUsed: false,
     disclaimer: CAUTION,
-    headline: buildSummary(scores, prominent).headline,
+    headline: summary.headline,
     sections: {
-      summary: buildSummary(scores, prominent),
+      summary,
       personality: {
         title: "나의 성격 특성",
         dimensions: PERSONALITY_DIMENSIONS.slice(0, 5).map(explain),
