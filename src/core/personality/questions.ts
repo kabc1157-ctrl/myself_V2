@@ -25,20 +25,6 @@ export type AssessmentItem = {
   reverseScored: boolean;
 };
 
-export const PERSONALITY_DIMENSION_LABELS: Record<PersonalityDimension, string> = {
-  "openness": "개방성",
-  "conscientiousness": "성실성",
-  "extraversion": "외향성",
-  "agreeableness": "친화성",
-  "emotional_sensitivity": "정서적 민감성",
-  "promotion": "향상초점",
-  "prevention": "예방초점",
-  "time_centered": "시간중심",
-  "cue_centered": "계기중심",
-  "flexible_execution": "유연한 실행"
-};
-
-
 export const PERSONALITY_ASSESSMENT_VERSION = "ieumsae-35-provisional-v2" as const;
 
 export const PERSONALITY_DIMENSION_LABELS: Record<PersonalityDimension, string> = {
