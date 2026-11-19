@@ -26,11 +26,38 @@ export async function saveProfile(input: { nickname: string; timezone: string })
 export async function saveAssessmentDraft(answers: Record<string, string>): Promise<Result> {
   try {
     const { supabase, user } = await clientAndUser();
-    const { data: existing } = await supabase.from("personality_assessments").select("id").eq("user_id", user.id).eq("status", "in_progress").maybeSingle();
-    const payload = { user_id: user.id, version: "pending", status: "in_progress", answers_json: answers, updated_at: new Date().toISOString() };
-    const query = existing ? supabase.from("personality_assessments").update(payload).eq("id", existing.id) : supabase.from("personality_assessments").insert(payload);
-    const { error } = await query;
+    // P0: The questions are not finalized yet. Only allow draft state,
+    // never scores, reports or a completed state from the browser.
+    if (!answers || typeof answers !== "object" || Array.isArray(answers) ||
+      Object.keys(answers).length > 35 ||
+      Object.entries(answers).some(([key, value]) =>
+        !/^q(?:[1-9]|[12][0-9]|3[0-5])$/.test(key) ||
+        typeof value !== "string" || value.length > 100)) {
+      return { ok: false, error: "검사 답변 형식이 올바르지 않아요." };
+    }
+
+    const { data: existing, error: readError } = await supabase
+      .from("personality_assessments")
+      .select("id,status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (readError) return { ok: false, error: "검사 상태를 확인하지 못했어요." };
+    if (existing && existing.status !== "in_progress") {
+      return { ok: false, error: "완료한 검사는 다시 수정할 수 없어요." };
+    }
+
+    const payload = { answers_json: answers, updated_at: new Date().toISOString() };
+    const { error } = existing
+      ? await supabase.from("personality_assessments")
+          .update(payload).eq("id", existing.id).eq("user_id", user.id).eq("status", "in_progress")
+      : await supabase.from("personality_assessments")
+          .insert({ ...payload, user_id: user.id, version: "pending", status: "in_progress" });
     if (error) return { ok: false, error: "검사 진행 상태를 저장하지 못했어요." };
+
+    const { error: profileError } = await supabase.from("profiles")
+      .update({ assessment_status: "in_progress", updated_at: new Date().toISOString() })
+      .eq("user_id", user.id).neq("assessment_status", "completed");
+    if (profileError) return { ok: false, error: "검사 상태를 저장하지 못했어요." };
     return { ok: true };
   } catch { return { ok: false, error: "로그인 세션을 확인해 주세요." }; }
 }
@@ -38,8 +65,19 @@ export async function saveAssessmentDraft(answers: Record<string, string>): Prom
 export async function skipAssessmentForDevelopment(): Promise<Result> {
   try {
     const { supabase, user } = await clientAndUser();
-    const { error } = await supabase.from("profiles").update({ onboarding_step: "modules" }).eq("user_id", user.id);
-    return error ? { ok: false, error: "성향 검사 건너뛰기를 저장하지 못했어요." } : { ok: true };
+    const { data: assessment, error: readError } = await supabase
+      .from("personality_assessments").select("status").eq("user_id", user.id).maybeSingle();
+    if (readError) return { ok: false, error: "검사 상태를 확인하지 못했어요." };
+    if (assessment && assessment.status !== "in_progress") {
+      return { ok: false, error: "완료된 검사는 건너뛸 수 없어요." };
+    }
+    const { data, error } = await supabase.from("profiles")
+      .update({ assessment_status: "skipped", onboarding_step: "modules", updated_at: new Date().toISOString() })
+      .eq("user_id", user.id).neq("assessment_status", "completed")
+      .select("user_id").maybeSingle();
+    return error || !data
+      ? { ok: false, error: "성향 검사 건너뛰기를 저장하지 못했어요." }
+      : { ok: true };
   } catch { return { ok: false, error: "로그인 세션을 확인해 주세요." }; }
 }
 
