@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/core/supabase/server";
+import { PERSONALITY_ASSESSMENT_VERSION } from "@/core/personality/questions";
+import { validateAssessmentAnswers } from "@/core/personality/scoring";
 
 const MODULES = ["diary", "routine", "schedule", "exercise", "reading", "memo", "payroll", "investment", "goal", "project"] as const;
 type Result = { ok: boolean; error?: string };
@@ -26,24 +28,25 @@ export async function saveProfile(input: { nickname: string; timezone: string })
 export async function saveAssessmentDraft(answers: Record<string, string>): Promise<Result> {
   try {
     const { supabase, user } = await clientAndUser();
-    // P0: The questions are not finalized yet. Only allow draft state,
-    // never scores, reports or a completed state from the browser.
-    if (!answers || typeof answers !== "object" || Array.isArray(answers) ||
-      Object.keys(answers).length > 35 ||
-      Object.entries(answers).some(([key, value]) =>
-        !/^q(?:[1-9]|[12][0-9]|3[0-5])$/.test(key) ||
-        typeof value !== "string" || value.length > 100)) {
+    // Drafts may be incomplete, but question IDs and 1–5 answers are strict.
+    // Never accept scores/reports from the client; completion remains disabled.
+    try {
+      validateAssessmentAnswers(answers, { allowPartial: true });
+    } catch {
       return { ok: false, error: "검사 답변 형식이 올바르지 않아요." };
     }
 
     const { data: existing, error: readError } = await supabase
       .from("personality_assessments")
-      .select("id,status")
+      .select("id,status,version")
       .eq("user_id", user.id)
       .maybeSingle();
     if (readError) return { ok: false, error: "검사 상태를 확인하지 못했어요." };
     if (existing && existing.status !== "in_progress") {
       return { ok: false, error: "완료한 검사는 다시 수정할 수 없어요." };
+    }
+    if (existing && existing.version !== PERSONALITY_ASSESSMENT_VERSION) {
+      return { ok: false, error: "이전 검사 문항으로 작성한 임시 답변은 자동 변경할 수 없어요. 관리자에게 문의해 주세요." };
     }
 
     const payload = { answers_json: answers, updated_at: new Date().toISOString() };
@@ -51,7 +54,7 @@ export async function saveAssessmentDraft(answers: Record<string, string>): Prom
       ? await supabase.from("personality_assessments")
           .update(payload).eq("id", existing.id).eq("user_id", user.id).eq("status", "in_progress")
       : await supabase.from("personality_assessments")
-          .insert({ ...payload, user_id: user.id, version: "pending", status: "in_progress" });
+          .insert({ ...payload, user_id: user.id, version: PERSONALITY_ASSESSMENT_VERSION, status: "in_progress" });
     if (error) return { ok: false, error: "검사 진행 상태를 저장하지 못했어요." };
 
     const { error: profileError } = await supabase.from("profiles")
