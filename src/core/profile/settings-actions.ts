@@ -23,11 +23,12 @@ export async function updateMyPageSettings(input: {
   const ctx = await context();
   if (!ctx) return { ok: false, error: "로그인이 필요합니다." };
   if (input.nickname.trim().length > 80) return { ok: false, error: "닉네임은 80자 이내로 입력해 주세요." };
-  const { error } = await ctx.supabase.from("profiles").update({
+  const { data, error } = await ctx.supabase.from("profiles").update({
     nickname: input.nickname.trim(), week_starts_on: input.weekStartsOn,
     ai_feedback_style: input.aiFeedbackStyle, day_starts_at: input.dayStartsAt || "07:00", day_ends_at: input.dayEndsAt || "23:00", updated_at: new Date().toISOString()
-  }).eq("user_id", ctx.user.id);
+  }).eq("user_id", ctx.user.id).select("user_id").maybeSingle();
   if (error) return { ok: false, error: `설정을 저장하지 못했어요. (${error.code ?? "DB_ERROR"})` };
+  if (!data) return { ok: false, error: "사용자 설정을 저장할 프로필을 찾지 못했어요." };
   revalidatePath("/mypage"); revalidatePath("/home"); revalidatePath("/diary"); revalidatePath("/routine"); revalidatePath("/schedule");
   return { ok: true };
 }
