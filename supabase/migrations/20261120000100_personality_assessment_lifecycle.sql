@@ -85,3 +85,30 @@ with check ((select auth.uid()) = user_id and status = 'in_progress');
 -- a trusted server-only completion path after validating all 35 answers.
 revoke delete on public.personality_assessments from anon, authenticated;
 revoke execute on function public.guard_personality_assessment_mutation() from public, anon, authenticated;
+
+-- Profile status is an indicator, never a way to unlock a finished test.
+create or replace function public.guard_personality_profile_status()
+returns trigger
+language plpgsql
+set search_path = pg_catalog, public
+as $$
+begin
+  if old.assessment_status = 'completed' and new.assessment_status <> 'completed' then
+    raise exception 'Completed personality status cannot be reset';
+  end if;
+  if new.assessment_status = 'completed'
+    and old.assessment_status is distinct from 'completed'
+    and not exists (
+      select 1 from public.personality_assessments a
+      where a.user_id = new.user_id and a.status = 'completed'
+    ) then
+    raise exception 'A completed personality assessment is required';
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists personality_profile_status_guard on public.profiles;
+create trigger personality_profile_status_guard
+before update of assessment_status on public.profiles
+for each row execute function public.guard_personality_profile_status();
+revoke execute on function public.guard_personality_profile_status() from public, anon, authenticated;
