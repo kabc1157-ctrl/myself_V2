@@ -1,0 +1,11 @@
+create table if not exists public.memo_topics (id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id) on delete cascade, name text not null check (char_length(btrim(name)) between 1 and 80), created_at timestamptz not null default now(), unique (id,user_id), unique (user_id,name));
+alter table public.memos add column if not exists topic_id uuid;
+alter table public.memos add column if not exists note text not null default '';
+alter table public.memos drop constraint if exists memos_topic_owner_fkey;
+alter table public.memos add constraint memos_topic_owner_fkey foreign key (topic_id, user_id) references public.memo_topics(id,user_id) on delete set null;
+alter table public.memo_topics enable row level security;
+drop policy if exists memo_topics_select_own on public.memo_topics; create policy memo_topics_select_own on public.memo_topics for select to authenticated using ((select auth.uid())=user_id);
+drop policy if exists memo_topics_insert_own on public.memo_topics; create policy memo_topics_insert_own on public.memo_topics for insert to authenticated with check ((select auth.uid())=user_id);
+drop policy if exists memo_topics_update_own on public.memo_topics; create policy memo_topics_update_own on public.memo_topics for update to authenticated using ((select auth.uid())=user_id) with check ((select auth.uid())=user_id);
+drop policy if exists memo_topics_delete_own on public.memo_topics; create policy memo_topics_delete_own on public.memo_topics for delete to authenticated using ((select auth.uid())=user_id);
+grant select,insert,update,delete on public.memo_topics to authenticated; revoke all on public.memo_topics from anon;

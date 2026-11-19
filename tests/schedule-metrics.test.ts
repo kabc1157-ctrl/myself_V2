@@ -1,0 +1,3 @@
+import {describe,expect,it} from "vitest";
+import {formatDuration,scheduleTimeMetrics} from "@/core/schedule-metrics";
+describe("scheduleTimeMetrics",()=>{it("계획과 완료·수동 실행 시간을 한 번씩 합산한다",()=>{const value=scheduleTimeMetrics([{starts_at:"2026-11-15T00:00:00Z",ends_at:"2026-11-15T01:30:00Z"}],[{status:"completed",started_at:"2026-11-15T00:00:00Z",accumulated_seconds:1800,manual_seconds:null},{status:"completed",started_at:"2026-11-15T00:00:00Z",accumulated_seconds:0,manual_seconds:1200}]);expect(value).toEqual({plannedSeconds:5400,actualSeconds:3000,differenceSeconds:-2400})});it("0과 음수 차이를 일관된 단위로 표시한다",()=>{expect(formatDuration(0)).toBe("0분");expect(formatDuration(-5400)).toBe("-1시간 30분")})});
