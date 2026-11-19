@@ -36,11 +36,10 @@ export async function saveAssessmentDraft(answers: Record<string, string>): Prom
 }
 
 export async function skipAssessmentForDevelopment(): Promise<Result> {
-  if (process.env.NODE_ENV === "production") return { ok: false, error: "개발 환경에서만 사용할 수 있어요." };
   try {
     const { supabase, user } = await clientAndUser();
     const { error } = await supabase.from("profiles").update({ onboarding_step: "modules" }).eq("user_id", user.id);
-    return error ? { ok: false, error: "개발용 건너뛰기를 저장하지 못했어요." } : { ok: true };
+    return error ? { ok: false, error: "성향 검사 건너뛰기를 저장하지 못했어요." } : { ok: true };
   } catch { return { ok: false, error: "로그인 세션을 확인해 주세요." }; }
 }
 
