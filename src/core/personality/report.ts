@@ -173,7 +173,7 @@ function prominentDimensions(scores: PersonalityScoringResult): PersonalityDimen
 function buildSummary(
   scores: PersonalityScoringResult,
   prominent: PersonalityDimension[],
-): PersonalityReport["sections"]["summary"] {
+): { headline: string; section: PersonalityReport["sections"]["summary"] } {
   const highlights = prominent.map((dimension) => {
     const { score, band } = scores.dimensions[dimension];
     return { dimension, label: PERSONALITY_DIMENSION_LABELS[dimension], score, band };
@@ -188,9 +188,12 @@ function buildSummary(
     : "상황에 따라 달라지는 나의 성향을 살펴보기";
   const texts = rules.slice(0, 3).map((rule) => rule.summary);
   return {
-    title: "나의 성향 요약",
-    text: `${texts.join(" ")} 다만 검사 응답은 출발점일 뿐이며, 실제 생활에서 언제 이런 모습이 나타나는지는 기록을 통해 확인할 필요가 있어요.`,
-    prominent: highlights,
+    headline,
+    section: {
+      title: "나의 성향 요약",
+      text: `${texts.join(" ")} 다만 검사 응답은 출발점일 뿐이며, 실제 생활에서 언제 이런 모습이 나타나는지는 기록을 통해 확인할 필요가 있어요.`,
+      prominent: highlights,
+    },
   };
 }
 
@@ -261,7 +264,7 @@ export function createPersonalityReport(answers: unknown): PersonalityReportBund
     disclaimer: CAUTION,
     headline: summary.headline,
     sections: {
-      summary,
+      summary: summary.section,
       personality: {
         title: "나의 성격 특성",
         dimensions: PERSONALITY_DIMENSIONS.slice(0, 5).map(explain),
