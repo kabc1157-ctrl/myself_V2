@@ -205,7 +205,7 @@ export function PersonalityAssessmentForm({ answers, setAnswers, onSkip, onBack,
           {isSaving ? "저장 중" : "지금 저장"}
         </button>
         <button type="button" className="flex-1 rounded-xl border p-3 text-sm disabled:opacity-50" disabled={pending || isSaving || isCompleting} onClick={() => { void leave(onBack); }}>
-          프로필로 돌아가기
+          {onSkip ? "프로필로 돌아가기" : "마이페이지로 돌아가기"}
         </button>
         {onSkip && (
           <button type="button" className="w-full rounded-xl border border-dashed border-amber-400 p-3 text-sm text-amber-800 disabled:opacity-50" disabled={pending || isSaving || isCompleting} onClick={() => { void leave(onSkip); }}>
