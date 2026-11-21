@@ -59,7 +59,7 @@ export async function updateNavigationOrder(order: string[]): Promise<Result> {
   revalidatePath("/mypage"); return { ok: true };
 }
 
-const AI_CONSENT_KEYS = ["module:diary", "module:routine", "module:schedule", "module:exercise", "module:reading", "module:memo", "module:payroll", "module:investment", "module:goal", "module:project", "personality_analysis"] as const;
+const AI_CONSENT_KEYS = ["module:diary", "module:routine", "module:schedule", "module:exercise", "module:reading", "module:memo", "module:payroll", "module:investment", "module:project", "personality_analysis"] as const;
 
 export async function updateAiConsents(consents: Record<string, boolean>): Promise<Result> {
   const ctx = await context();

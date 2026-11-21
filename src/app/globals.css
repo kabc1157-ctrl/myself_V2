@@ -1019,6 +1019,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .mypage-page .mypage-order-list > label input { width: 20px; height: 20px; accent-color: #ffbe46; }
 .mypage-page .record-button { min-height: 44px; border-radius: 14px; padding-inline: 18px; background: #ffe3b3; }
 .mypage-page .record-button.secondary { background: rgb(255 255 255 / 45%); }
+.mypage-page .mypage-install-guide { display: grid; gap: 18px; }
+.mypage-page .mypage-install-guide h3 { display: flex; align-items: center; gap: 10px; margin: 0; color: #586486; font-size: 1.05rem; letter-spacing: -.03em; }
+.mypage-page .mypage-install-guide h3::before { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: #ffe3b3; color: #756a60; content: counter(install-step, decimal-leading-zero); font-size: .65rem; font-weight: 800; }
+.mypage-page .mypage-install-guide { counter-reset: install-step; }
+.mypage-page .mypage-install-guide h3 { counter-increment: install-step; }
+.mypage-page .mypage-install-guide p { margin: -8px 0 0 38px; color: #7e7973; font-size: .9rem; line-height: 1.65; }
+.mypage-page .mypage-install-guide h3 + p { padding: 14px 16px; border-radius: 16px; background: rgb(255 255 255 / 48%); }
+.mypage-page .mypage-install-guide h3:nth-of-type(2) { margin-top: 2px; }
 @media (max-width: 520px) {
   .mypage-page .mypage-collapsible > summary { min-height: 118px; padding: 24px 22px; }
   .mypage-page .mypage-collapsible[open] > summary { min-height: 66px; padding: 20px 22px 10px; }
