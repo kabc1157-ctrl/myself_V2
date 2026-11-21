@@ -1,14 +1,12 @@
 name: Personality P5 verification
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches: [main, preview/v2-initial]
+  push:
+    branches: [feature/personality-assessment-p0-lifecycle]
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   verify:
-    if: github.head_ref == 'feature/personality-assessment-p0-lifecycle' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
