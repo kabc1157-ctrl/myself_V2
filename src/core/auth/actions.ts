@@ -5,7 +5,8 @@ import { createSupabaseServerClient } from "@/core/supabase/server";
 import { toKoreanAuthError, type AuthActionState } from "@/core/auth/error-message";
 
 function value(formData: FormData, name: string) { return String(formData.get(name) ?? "").trim(); }
-function callbackUrl(next: string) { const url = new URL("/auth/callback", process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"); url.searchParams.set("next", next); return url.toString(); }
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://myselfv2.vercel.app";
+function callbackUrl(next: string) { const url = new URL("/auth/callback", siteUrl); url.searchParams.set("next", next); return url.toString(); }
 
 export async function signUp(_previous: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const email = value(formData, "email");
@@ -19,7 +20,7 @@ export async function signUp(_previous: AuthActionState, formData: FormData): Pr
   if (password.length < 8) return { error: "비밀번호는 8자 이상으로 설정해 주세요." };
   try {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: { nickname }, emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/auth/callback` } });
+    const { error } = await supabase.auth.signUp({ email, password, options: { data: { nickname }, emailRedirectTo: `${siteUrl}/auth/callback` } });
     if (error) return { error: toKoreanAuthError(error) };
     return { message: "가입 확인 메일을 확인해 주세요." };
   } catch (error) {
