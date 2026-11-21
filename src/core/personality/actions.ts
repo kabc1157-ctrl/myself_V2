@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/core/supabase/server";
 import { createSupabaseAdminClient } from "@/core/supabase/admin";
 import { PERSONALITY_ASSESSMENT_VERSION } from "@/core/personality/questions";
 import { createPersonalityReport } from "@/core/personality/report";
+import { isPersonalityReportSnapshot } from "@/core/personality/snapshot";
 
 export type CompletePersonalityResult = { ok: boolean; error?: string };
 
@@ -24,6 +25,11 @@ export async function completePersonalityAssessment(
     snapshot = createPersonalityReport(answers);
   } catch {
     return { ok: false, error: "35개 문항에 모두 올바르게 응답해 주세요." };
+  }
+
+  // Account completion is irreversible. Do not commit a result the reader cannot render.
+  if (!isPersonalityReportSnapshot(snapshot.report)) {
+    return { ok: false, error: "결과 형식을 확인하지 못했어요. 완료 처리하지 않았으니 다시 시도해 주세요." };
   }
 
   try {
