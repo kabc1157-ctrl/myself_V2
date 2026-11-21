@@ -85,3 +85,12 @@ export async function getAiConsents(): Promise<Record<string, boolean>> {
   const { data } = await ctx.supabase.from("ai_consents").select("consent_key,consented").eq("user_id", ctx.user.id);
   return Object.fromEntries((data ?? []).map((item) => [item.consent_key, item.consented]));
 }
+
+export async function startPersonalityAssessment(): Promise<Result> {
+  const ctx = await context();
+  if (!ctx) return { ok: false, error: "로그인이 필요합니다." };
+  const { error } = await ctx.supabase.from("profiles").update({ onboarding_step: "assessment", updated_at: new Date().toISOString() }).eq("user_id", ctx.user.id);
+  if (error) return { ok: false, error: "성향 검사를 시작하지 못했어요." };
+  revalidatePath("/mypage"); revalidatePath("/onboarding");
+  return { ok: true };
+}
