@@ -19,6 +19,21 @@ describe("saved personality report", () => {
     expect(isPersonalityReportSnapshot(result)).toBe(true);
   });
 
+  it("accepts every uniform response and diverse deterministic response patterns", () => {
+    const patterns = [
+      ...[1, 2, 3, 4, 5].map(value => ASSESSMENT_ITEMS.map(() => String(value))),
+      ...Array.from({ length: 20 }, (_, seed) =>
+        ASSESSMENT_ITEMS.map((_, index) => String(1 + ((index * (seed + 1) + seed) % 5))),
+      ),
+    ];
+    for (const values of patterns) {
+      const answers = Object.fromEntries(ASSESSMENT_ITEMS.map((item, index) => [item.id, values[index]]));
+      const { report } = createPersonalityReport(answers);
+      expect(isPersonalityReportSnapshot(JSON.parse(JSON.stringify(report)))).toBe(true);
+      expect(Object.keys(report.sections)).toHaveLength(7);
+    }
+  });
+
   it("rejects missing titles and malformed nested data without mutating the snapshot", () => {
     const valid = report();
     const malformed = [
