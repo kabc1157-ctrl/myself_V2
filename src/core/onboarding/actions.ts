@@ -29,7 +29,7 @@ export async function saveAssessmentDraft(answers: Record<string, string>): Prom
   try {
     const { supabase, user } = await clientAndUser();
     // Drafts may be incomplete, but question IDs and 1–5 answers are strict.
-    // Never accept scores/reports from the client; completion remains disabled.
+    // Never accept scores/reports from the client; only the trusted completion action can finalize.
     try {
       validateAssessmentAnswers(answers, { allowPartial: true });
     } catch {
@@ -50,12 +50,15 @@ export async function saveAssessmentDraft(answers: Record<string, string>): Prom
     }
 
     const payload = { answers_json: answers, updated_at: new Date().toISOString() };
-    const { error } = existing
+    const { data: saved, error } = existing
       ? await supabase.from("personality_assessments")
-          .update(payload).eq("id", existing.id).eq("user_id", user.id).eq("status", "in_progress")
+          .update(payload).eq("id", existing.id).eq("user_id", user.id)
+          .eq("version", PERSONALITY_ASSESSMENT_VERSION).eq("status", "in_progress")
+          .select("id").maybeSingle()
       : await supabase.from("personality_assessments")
-          .insert({ ...payload, user_id: user.id, version: PERSONALITY_ASSESSMENT_VERSION, status: "in_progress" });
-    if (error) return { ok: false, error: "검사 진행 상태를 저장하지 못했어요." };
+          .insert({ ...payload, user_id: user.id, version: PERSONALITY_ASSESSMENT_VERSION, status: "in_progress" })
+          .select("id").maybeSingle();
+    if (error || !saved) return { ok: false, error: "검사 진행 상태를 저장하지 못했어요. 이미 완료했거나 다른 화면에서 변경되었는지 확인해 주세요." };
 
     const { error: profileError } = await supabase.from("profiles")
       .update({ assessment_status: "in_progress", updated_at: new Date().toISOString() })
