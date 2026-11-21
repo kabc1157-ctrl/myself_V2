@@ -990,6 +990,41 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .market-page{display:grid;gap:16px}.market-quotes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.market-quotes article,.market-flow,.market-source{background:var(--surface,#fbf6ef);border:1px solid #e3ddd5;border-radius:20px;padding:16px}.market-quotes strong{display:block;font-size:1.4rem;color:var(--text,#586486);margin:10px 0}.market-quotes p,.market-quotes small,.market-source p,.market-flow small{color:var(--text-muted,#7e7973);font-size:.8rem}.investment-page-link{display:flex;justify-content:flex-end;margin-bottom:8px}@media(max-width:640px){.market-quotes{grid-template-columns:repeat(2,minmax(0,1fr))}.market-quotes article:last-child{grid-column:span 2}}
 .schedule-detail-toggle{display:flex;width:100%;align-items:center;justify-content:space-between;background:transparent;border:0;color:inherit;padding:0;text-align:left}.schedule-detail-toggle h3{margin:0}.schedule-detail-toggle span{font-size:1.4rem;color:var(--text,#586486)}
 .mypage-danger-zone { margin-top: 14px; border-color: rgb(255 140 114 / 34%); }
+
+/* My page: a calm, card-led personal space consistent with the IEUMSAE visual language. */
+.mypage-page { gap: 16px; padding-bottom: 18px; }
+.mypage-page .record-heading { display: block; padding: 10px 6px 12px; }
+.mypage-page .record-heading > div { display: grid; gap: 7px; }
+.mypage-page .record-heading p:first-child { color: #7e7973; font-size: .78rem; letter-spacing: .02em; }
+.mypage-page .record-heading h1 { margin: 0; font-size: clamp(2.15rem, 9vw, 3.4rem); font-weight: 700; letter-spacing: -.08em; line-height: 1.05; }
+.mypage-page .record-heading .record-muted { font-size: 1rem; }
+.mypage-settings-grid { gap: 14px; }
+.mypage-page .mypage-collapsible { overflow: hidden; border: 0; border-radius: 30px; background: #f6e8d7; box-shadow: 0 12px 28px rgb(88 100 134 / 7%); }
+.mypage-page .mypage-collapsible > summary { display: flex; min-height: 142px; align-items: center; justify-content: space-between; padding: 28px 32px; color: #586486; cursor: pointer; font-size: clamp(1.35rem, 5vw, 2rem); font-weight: 700; letter-spacing: -.06em; list-style: none; }
+.mypage-page .mypage-collapsible > summary::-webkit-details-marker { display: none; }
+.mypage-page .mypage-collapsible > summary::after { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #f7f7f4; color: #586486; content: '+'; font-size: 1.8rem; font-weight: 400; line-height: 1; }
+.mypage-page .mypage-collapsible[open] > summary { min-height: 78px; padding-bottom: 14px; font-size: 1.25rem; }
+.mypage-page .mypage-collapsible[open] > summary::after { content: '−'; }
+.mypage-page .mypage-collapsible > div { padding: 0 32px 30px; }
+.mypage-page .mypage-settings-grid > details:nth-child(2) { background: #fff5e7; }
+.mypage-page .mypage-settings-grid > details:nth-child(3) { background: #edf5f8; }
+.mypage-page .mypage-settings-grid > details:nth-child(4) { background: #f1ecdf; }
+.mypage-page > .mypage-collapsible { background: #fff5e7; }
+.mypage-page > .mypage-collapsible:nth-of-type(3) { background: #edf5f8; }
+.mypage-page > .mypage-danger-zone { background: #fff8f2; border: 1px solid rgb(180 90 74 / 28%); box-shadow: none; }
+.mypage-page .mypage-form-grid { padding-top: 4px; }
+.mypage-page .mypage-order-list { gap: 7px; }
+.mypage-page .mypage-order-list > div, .mypage-page .mypage-order-list > label { min-height: 48px; border: 1px solid rgb(88 100 134 / 10%); border-radius: 16px; background: rgb(255 255 255 / 48%); padding: 9px 12px; }
+.mypage-page .mypage-order-list > label { display: flex; align-items: center; gap: 10px; color: #586486; font-size: .86rem; font-weight: 700; }
+.mypage-page .mypage-order-list > label input { width: 20px; height: 20px; accent-color: #ffbe46; }
+.mypage-page .record-button { min-height: 44px; border-radius: 14px; padding-inline: 18px; background: #ffe3b3; }
+.mypage-page .record-button.secondary { background: rgb(255 255 255 / 45%); }
+@media (max-width: 520px) {
+  .mypage-page .mypage-collapsible > summary { min-height: 118px; padding: 24px 22px; }
+  .mypage-page .mypage-collapsible[open] > summary { min-height: 66px; padding: 20px 22px 10px; }
+  .mypage-page .mypage-collapsible > div { padding: 0 22px 24px; }
+  .mypage-page .mypage-collapsible > summary::after { width: 38px; height: 38px; }
+}
 .account-actions-body, .account-delete-confirm { display: grid; gap: 12px; }
 .account-delete-confirm { margin-top: 14px; padding-top: 14px; border-top: 1px solid rgb(255 140 114 / 22%); }
 .account-delete-confirm h3 { margin: 0; color: #9d5144; font-size: .9rem; }
