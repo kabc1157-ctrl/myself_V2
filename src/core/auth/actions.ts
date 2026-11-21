@@ -11,16 +11,14 @@ function callbackUrl(next: string) { const url = new URL("/auth/callback", siteU
 export async function signUp(_previous: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const email = value(formData, "email");
   const password = value(formData, "password");
-  const nickname = value(formData, "nickname");
   const passwordConfirm = value(formData, "passwordConfirm");
-  if (!nickname) return { error: "닉네임을 입력해 주세요." };
   if (!passwordConfirm || password !== passwordConfirm) return { error: "비밀번호가 일치하지 않아요." };
   if (formData.get("terms") !== "on") return { error: "필수 약관에 동의해 주세요." };
   if (!email) return { error: "이메일 주소를 입력해 주세요." };
   if (password.length < 8) return { error: "비밀번호는 8자 이상으로 설정해 주세요." };
   try {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.signUp({ email, password, options: { data: { nickname }, emailRedirectTo: `${siteUrl}/auth/callback` } });
+    const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: `${siteUrl}/auth/callback` } });
     if (error) return { error: toKoreanAuthError(error) };
     return { message: "가입 확인 메일을 확인해 주세요." };
   } catch (error) {
