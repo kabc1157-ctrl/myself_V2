@@ -1,28 +1,29 @@
-.life-balance-card{background:#fff;border:1px solid #eae5df;border-radius:22px;box-shadow:0 2px 7px rgba(35,29,20,.04);padding:16px 20px;margin:14px 0 20px}
-.life-balance-heading{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;background:transparent;border:0;color:#211e1a;cursor:pointer;padding:3px 0 13px;text-align:left}
-.life-balance-heading-title{display:inline-flex;align-items:center;gap:9px;font-size:17px;font-weight:700}
-.life-balance-heading-title svg{color:#ffbe46}
-.life-balance-heading-side{display:inline-flex;align-items:center;gap:8px;color:#77716b;font-size:12px;white-space:nowrap}
-.life-balance-heading-side svg{transition:transform .18s}
+.life-balance-card{margin:0;border:1px solid rgb(88 100 134 / 12%);border-radius:26px;background:#fbf6ef;box-shadow:0 10px 24px rgb(88 100 134 / 6%);padding:0 18px 18px;color:#586486}
+.life-balance-heading{display:flex;width:100%;min-height:74px;align-items:center;justify-content:space-between;gap:12px;padding:0 2px;border:0;border-bottom:1px solid rgb(88 100 134 / 12%);background:transparent;color:#586486;cursor:pointer;text-align:left}
+.life-balance-heading:focus-visible{outline:2px solid rgb(255 190 70 / 70%);outline-offset:-3px;border-radius:18px}
+.life-balance-heading-title{display:inline-flex;min-width:0;align-items:center;gap:10px;font-size:clamp(1.08rem,4.5vw,1.35rem);font-weight:800;letter-spacing:-.05em}
+.life-balance-heading-title svg{flex:0 0 auto;color:#ffbe46}
+.life-balance-heading-side{display:inline-flex;flex:0 0 auto;align-items:center;gap:7px;color:#7e7973;font-size:.82rem;font-weight:700;white-space:nowrap}
+.life-balance-heading-side svg{transition:transform .18s ease}
 .life-balance-heading-side svg.is-open{transform:rotate(180deg)}
-.life-balance-summary{border-top:1px solid #f0edeb;padding-top:13px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.life-balance-summary-item{display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;font-size:13px}
-.life-balance-summary-item strong{font-weight:700}
-.life-balance-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.life-balance-expanded{border-top:1px solid #f0edeb;padding-top:10px}
-.life-balance-description{font-size:12px;color:#817c76;margin:0 0 14px}
-.life-balance-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.life-balance-filters button{border:1px solid #e9e1d7;background:#fff;border-radius:999px;min-height:33px;padding:5px 1px;font-size:11px;cursor:pointer;color:#3f3932}
-.life-balance-filters button.selected{background:#ffce73;border-color:#ffce73;font-weight:700;color:#231b0e}
-.life-balance-filters button:disabled{opacity:.6;cursor:wait}
-.life-balance-plot{display:flex;border:1px solid #f0e9e1;border-radius:15px;margin-top:16px;padding:16px 12px 12px;min-height:234px}
-.life-balance-yaxis{display:flex;flex-direction:column;justify-content:space-between;height:174px;width:26px;color:#89847e;font-size:11px;flex-shrink:0;text-align:right;padding-right:7px}
-.life-balance-columns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;flex:1;border-bottom:1px solid #d9d5d0;position:relative;padding:0 6px}
-.life-balance-column{height:198px;display:flex;flex-direction:column;align-items:center;min-width:0}
-.life-balance-bar-zone{width:100%;height:174px;display:flex;justify-content:flex-end;align-items:center;flex-direction:column}
-.life-balance-bar{max-width:70px;width:75%;border-radius:9px 9px 0 0;flex-shrink:0;transition:height .2s}
-.life-balance-number{font-size:13px;font-weight:700;margin-bottom:5px;color:#2a2926}
-.life-balance-xlabel{font-size:12px;margin-top:8px;color:#77716b;white-space:nowrap}
-.life-balance-error{color:#b33b30;font-size:12px;padding:5px 0}
-.life-balance-loading{color:#77716b;font-size:12px;margin:8px 0 0}
-@media(max-width:370px){.life-balance-card{padding:14px 12px}.life-balance-summary-item{font-size:11px;gap:3px}.life-balance-dot{width:7px;height:7px}.life-balance-columns{gap:4px}.life-balance-filters{gap:3px}.life-balance-filters button{font-size:10px}}
+.life-balance-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding-top:16px}
+.life-balance-summary-item{display:flex;min-width:0;align-items:center;justify-content:center;gap:5px;color:#586486;font-size:.76rem;white-space:nowrap}
+.life-balance-summary-item strong{font-weight:800}
+.life-balance-dot{width:9px;height:9px;flex:0 0 auto;border-radius:50%}
+.life-balance-expanded{padding-top:14px}
+.life-balance-description{margin:0 0 14px;color:#7e7973;font-size:.82rem;font-weight:700}
+.life-balance-filters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.life-balance-filters button{min-height:38px;padding:6px 3px;border:1px solid #ded2c4;border-radius:999px;background:#fbf6ef;color:#586486;cursor:pointer;font:inherit;font-size:.72rem;font-weight:700;white-space:nowrap}
+.life-balance-filters button.selected{border-color:#ffbe46;background:#ffcf7a;color:#42351f;font-weight:800}
+.life-balance-filters button:disabled{cursor:wait;opacity:.6}
+.life-balance-plot{display:flex;min-height:218px;margin-top:14px;padding:14px 10px 10px;border:1px solid rgb(88 100 134 / 12%);border-radius:18px;background:rgb(255 255 255 / 48%)}
+.life-balance-yaxis{display:flex;width:24px;height:160px;flex:0 0 auto;flex-direction:column;justify-content:space-between;padding-right:6px;color:#7e7973;font-size:.7rem;text-align:right}
+.life-balance-columns{display:grid;position:relative;flex:1;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 4px;border-bottom:1px solid #d9d2c9}
+.life-balance-column{display:flex;min-width:0;height:184px;flex-direction:column;align-items:center}
+.life-balance-bar-zone{display:flex;width:100%;height:160px;flex-direction:column;align-items:center;justify-content:flex-end}
+.life-balance-bar{width:min(70%,58px);max-width:58px;border-radius:9px 9px 0 0;flex-shrink:0;transition:height .2s ease}
+.life-balance-number{margin-bottom:5px;color:#2a2926;font-size:.86rem;font-weight:800}
+.life-balance-xlabel{margin-top:8px;color:#7e7973;font-size:.78rem;font-weight:700;white-space:nowrap}
+.life-balance-error,.life-balance-loading{margin:8px 0 0;color:#7e7973;font-size:.75rem}
+.life-balance-error{color:#b33b30}
+@media(max-width:420px){.life-balance-card{padding-inline:14px}.life-balance-heading{min-height:68px}.life-balance-heading-title{font-size:1.08rem}.life-balance-heading-side{font-size:.72rem}.life-balance-summary-item{font-size:.68rem}.life-balance-summary{gap:2px}.life-balance-filters{gap:4px}.life-balance-filters button{min-height:36px;font-size:.64rem}.life-balance-plot{min-height:200px;padding-inline:6px}.life-balance-columns{gap:3px}.life-balance-column{height:166px}.life-balance-bar-zone,.life-balance-yaxis{height:145px}.life-balance-xlabel{font-size:.7rem}}
