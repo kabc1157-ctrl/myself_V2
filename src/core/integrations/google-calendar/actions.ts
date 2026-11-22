@@ -16,5 +16,8 @@ export async function saveCalendarEvent(input: unknown) {
 export async function removeCalendarEvent(eventId: string) {
   const supabase = await createSupabaseServerClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return { ok: false, error: "로그인이 필요합니다." };
   if (!eventId) return { ok: false, error: "일정 ID가 필요합니다." };
-  try { await deleteCalendarEvent(user.id, eventId); return { ok: true }; } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "일정을 삭제하지 못했어요." }; }
+  try { await deleteCalendarEvent(user.id, eventId); await Promise.all([
+    supabase.from("calendar_event_life_areas").delete().eq("user_id",user.id).eq("event_id",eventId),
+    supabase.from("schedule_completions").delete().eq("user_id",user.id).eq("source_type","google").eq("source_id",eventId),
+  ]); return { ok: true }; } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "일정을 삭제하지 못했어요." }; }
 }
