@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { ChevronDown, ChartNoAxesColumnIncreasing } from "lucide-react";
 import {
   LIFE_AREAS, LIFE_AREA_LABELS, LIFE_AREA_COLORS, LIFE_BALANCE_PERIODS,
-  emptyLifeBalance, type LifeBalanceCounts, type LifeBalancePeriod,
+  type LifeBalanceCounts, type LifeBalancePeriod,
 } from "@/core/life-balance";
 import { getLifeBalancePeriod, type LifeBalanceResponse } from "@/core/life-balance-actions";
 import "./life-balance-card.css";
@@ -17,15 +17,26 @@ export function LifeBalanceCard({ initial }: { initial: LifeBalanceResponse }) {
   const [pending, start] = useTransition();
   const max = Math.max(1, ...LIFE_AREAS.map((area) => counts[area]));
   const periodLabel = LIFE_BALANCE_PERIODS.find((item) => item.value === period)?.label ?? "최근 7일";
+  useEffect(() => {
+    let active = true;
+    if (period === "7d") {
+      setCounts(initial.counts);
+      setError(initial.ok ? "" : initial.error);
+    } else {
+      start(async () => {
+        const response = await getLifeBalancePeriod(period);
+        if (!active) return;
+        if (response.ok) { setCounts(response.counts); setError(""); }
+        else setError(response.error);
+      });
+    }
+    return () => { active = false; };
+  }, [initial, period, start]);
+
   function choosePeriod(next: LifeBalancePeriod) {
     if (next === period) return;
     setPeriod(next);
     setError("");
-    start(async () => {
-      const response = await getLifeBalancePeriod(next);
-      if (response.ok) setCounts(response.counts);
-      else setError(response.error);
-    });
   }
   return (
     <section className="life-balance-card" aria-label="나의 삶 밸런스">

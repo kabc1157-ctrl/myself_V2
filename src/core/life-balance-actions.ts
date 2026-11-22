@@ -42,10 +42,14 @@ export async function getLifeBalancePeriod(period: LifeBalancePeriod): Promise<L
     console.error("[life-balance] query failed", results.filter((result) => result.error).map((result) => result.error?.code));
     return { ok: false, counts: emptyLifeBalance(), error: "삶 밸런스 기록을 불러오지 못했어요." };
   }
-  const data = results.map((result) => result.data ?? []);
-  const sources = {
-    projects: data[0], todos: data[1], routines: data[2], occurrences: data[3],
-    exercises: data[4], calendarAreas: data[5], completions: data[6],
-  } as LifeBalanceSources;
+  const sources: LifeBalanceSources = {
+    projects: results[0].data ?? [],
+    todos: results[1].data ?? [],
+    routines: results[2].data ?? [],
+    occurrences: results[3].data ?? [],
+    exercises: results[4].data ?? [],
+    calendarAreas: results[5].data ?? [],
+    completions: results[6].data ?? [],
+  };
   return { ok: true, counts: summarizeLifeBalance(sources, period, today, timeZone) };
 }
