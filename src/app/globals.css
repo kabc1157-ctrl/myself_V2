@@ -1077,3 +1077,18 @@ button, a { -webkit-tap-highlight-color: transparent; }
   }
   .memo-page .rk-form:not(:has(.memo-topic-add)) > .record-muted { margin: 10px 0 0; max-width: none; }
 }
+
+/* MyPage settings alignment */
+.mypage-order-list > div { justify-content: space-between; gap: 12px; }
+.mypage-order-label { display: flex; min-width: 0; align-items: center; gap: 10px; color: #586486; font-size: .86rem; font-weight: 700; }
+.mypage-order-label b { width: 1.5em; flex: 0 0 auto; color: #7e7973; font-size: .78rem; text-align: center; }
+.mypage-order-label span { min-width: 0; overflow-wrap: anywhere; }
+.mypage-order-controls { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; }
+.mypage-order-controls input[type="checkbox"], .mypage-consent-all input, .mypage-consent-grid input { width: 20px; height: 20px; accent-color: #ffbe46; }
+.mypage-order-controls button { min-width: 34px; min-height: 34px; }
+.mypage-settings-save { display: flex; justify-content: flex-end; }
+.mypage-consent-all { display: flex; min-height: 46px; align-items: center; gap: 10px; margin: 10px 0; padding: 10px 12px; border: 1px solid rgb(88 100 134 / 12%); border-radius: 14px; background: rgb(255 255 255 / 48%); color: #586486; font-size: .86rem; font-weight: 800; }
+.mypage-consent-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mypage-consent-grid > label { display: flex; min-width: 0; min-height: 46px; align-items: center; gap: 9px; padding: 9px 10px; border: 1px solid rgb(88 100 134 / 10%); border-radius: 14px; background: rgb(255 255 255 / 48%); color: #586486; font-size: .82rem; font-weight: 700; }
+.mypage-consent-grid > label span { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 420px) { .mypage-consent-grid { gap: 6px; } .mypage-consent-grid > label { gap: 6px; padding-inline: 7px; font-size: .72rem; } .mypage-order-controls { gap: 3px; } .mypage-order-controls button { min-width: 31px; } }
