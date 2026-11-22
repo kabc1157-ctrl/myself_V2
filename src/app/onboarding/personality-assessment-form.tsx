@@ -14,7 +14,7 @@ type Props = {
   answers: Record<string, string>;
   setAnswers: (answers: Record<string, string>) => void;
   onSkip?: () => void;
-  onBack: () => void;
+  onBack?: () => void;
   onComplete: () => void;
   pending: boolean;
 };
@@ -27,7 +27,7 @@ function firstOpenQuestion(answers: Record<string, string>): number {
 }
 
 /** All 35 answers are saved before trusted, one-time server submission. */
-export function PersonalityAssessmentForm({ answers, setAnswers, onSkip, onBack, onComplete, pending }: Props) {
+export function PersonalityAssessmentForm({ answers, setAnswers, onComplete, pending }: Props) {
   const [index, setIndex] = useState(() => firstOpenQuestion(answers));
   const [changeRevision, setChangeRevision] = useState(0);
   const [savedRevision, setSavedRevision] = useState(0);
@@ -94,7 +94,7 @@ export function PersonalityAssessmentForm({ answers, setAnswers, onSkip, onBack,
   const group = assessmentGroup(index);
   const isDirty = changeRevision > savedRevision;
 
-  const selectAnswer = (value: string) => {
+  const selectAnswer = async (value: string) => {
     const next = { ...answers, [question.id]: value };
     latestAnswersRef.current = next;
     setAnswers(next);
@@ -103,12 +103,11 @@ export function PersonalityAssessmentForm({ answers, setAnswers, onSkip, onBack,
     setShowSaved(false);
     setAutoSavePaused(false);
     setSaveError("");
-  };
 
-  const leave = async (next: () => void) => {
-    if (pending || isSaving || isCompleting) return;
-    if (isDirty && !(await saveNow())) return;
-    next();
+    const saved = await saveNow();
+    if (saved && index < ASSESSMENT_ITEM_COUNT - 1) {
+      setIndex((current) => Math.min(ASSESSMENT_ITEM_COUNT - 1, current + 1));
+    }
   };
 
   const submitCompletedAssessment = async () => {
@@ -168,7 +167,7 @@ export function PersonalityAssessmentForm({ answers, setAnswers, onSkip, onBack,
                     value={value}
                     checked={active}
                     disabled={pending || isSaving || isCompleting}
-                    onChange={() => selectAnswer(value)}
+                    onChange={() => { void selectAnswer(value); }}
                     aria-label={`${value}점, ${label}`}
                   />
                   <span className="text-lg font-semibold">{value}</span>
@@ -187,8 +186,8 @@ export function PersonalityAssessmentForm({ answers, setAnswers, onSkip, onBack,
         <button type="button" className="rounded-xl border border-stone-300 p-3 text-sm" disabled={pending || isSaving || isCompleting || index === 0} onClick={() => setIndex((i) => Math.max(0, i - 1))}>
           이전 문항
         </button>
-        <button type="button" className="rounded-xl bg-stone-900 p-3 text-sm text-white disabled:opacity-40" disabled={pending || isSaving || isCompleting || !selected || index >= ASSESSMENT_ITEM_COUNT - 1} onClick={() => setIndex((i) => Math.min(ASSESSMENT_ITEM_COUNT - 1, i + 1))}>
-          다음 문항
+        <button type="button" className="rounded-xl bg-stone-900 p-3 text-sm text-white disabled:opacity-40" disabled={pending || isSaving || isCompleting || !selected} onClick={() => { void saveNow(); }}>
+          {isSaving ? "저장 중" : "지금 저장"}
         </button>
       </div>
       {answered === ASSESSMENT_ITEM_COUNT && (
@@ -200,19 +199,6 @@ export function PersonalityAssessmentForm({ answers, setAnswers, onSkip, onBack,
           </button>
         </div>
       )}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <button type="button" className="flex-1 rounded-xl border p-3 text-sm disabled:opacity-50" disabled={pending || isSaving || isCompleting} onClick={() => { void saveNow(); }}>
-          {isSaving ? "저장 중" : "지금 저장"}
-        </button>
-        <button type="button" className="flex-1 rounded-xl border p-3 text-sm disabled:opacity-50" disabled={pending || isSaving || isCompleting} onClick={() => { void leave(onBack); }}>
-          {onSkip ? "프로필로 돌아가기" : "마이페이지로 돌아가기"}
-        </button>
-        {onSkip && (
-          <button type="button" className="w-full rounded-xl border border-dashed border-amber-400 p-3 text-sm text-amber-800 disabled:opacity-50" disabled={pending || isSaving || isCompleting} onClick={() => { void leave(onSkip); }}>
-            검사 완료 없이 건너뛰고 다음 설정으로
-          </button>
-        )}
-      </div>
     </section>
   );
 }

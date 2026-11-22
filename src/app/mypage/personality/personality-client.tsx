@@ -13,7 +13,6 @@ export function MyPagePersonalityAssessment({ initialAnswers }: {
     answers={answers}
     setAnswers={setAnswers}
     pending={false}
-    onBack={() => router.push("/mypage")}
     onComplete={() => { router.replace("/mypage/personality/report"); router.refresh(); }}
   />;
 }
