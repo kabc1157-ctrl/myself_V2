@@ -6,7 +6,7 @@ import { ProjectClient } from "./project-client";
 export default async function ProjectPage({ searchParams }: { searchParams: Promise<{ project?: string; year?: string }> }) {
   const supabase = await createSupabaseServerClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) redirect("/auth/login");
   const params = await searchParams;
-  const { data: projects } = await supabase.from("projects").select("id,title,description,start_date,target_date,category,status,status_source,completed_at,created_at,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false });
+  const { data: projects } = await supabase.from("projects").select("id,title,description,start_date,target_date,classification,category,status,status_source,completed_at,created_at,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false });
   const selectedId = params.project && projects?.some((p) => p.id === params.project) ? params.project : projects?.[0]?.id;
   const [{ data: todos }, { data: reflections }, { data: looseTodos }, { data: projectTodos }] = await Promise.all([
     supabase.from("todos").select("id,title,memo,planned_date,is_completed,completed_at,project_id,created_at,updated_at").eq("user_id", user.id).not("project_id", "is", null).order("is_completed").order("created_at", { ascending: false }),

@@ -507,6 +507,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .project-page .project-card-summary > div span { color:#7e7973; font-size:.68rem; }
 .project-page .project-card-summary .rk-progress-ring { display:none; }
 .project-page .project-card-summary { display:none; }
+.project-page .project-card-trigger { display:flex; min-width:0; align-items:baseline; gap:8px; flex-wrap:wrap; text-align:left; }
+.project-page .project-card-trigger strong { overflow:hidden; color:#586486; font-size:.9rem; font-weight:800; text-overflow:ellipsis; white-space:nowrap; }
+.project-page .project-card-trigger small { color:#7e7973; font-size:.7rem; font-weight:400; }
+.project-page .project-empty-state { display:grid; gap:8px; padding:14px; border:1px dashed rgb(191 151 80 / 35%); border-radius:14px; background:#fffaf2; text-align:center; color:#7e7973; font-size:.78rem; }
 .project-page .project-detail-content > h3:nth-of-type(2),
 .project-page .project-detail-content > h3:nth-of-type(2) + .rk-actions { display:none; }
 .project-page .project-detail-content { display:grid; gap:10px; }
