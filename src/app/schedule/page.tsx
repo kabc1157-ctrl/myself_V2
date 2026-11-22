@@ -23,8 +23,12 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     supabase.from("profiles").select("day_starts_at,day_ends_at").eq("user_id",user.id).single(),
     supabase.from("schedule_reflections").select("id,reflection_date,content").eq("user_id",user.id).eq("reflection_date",date).is("deleted_at",null).maybeSingle()
   ]);
+  const [{data:calendarAreas},{data:googleCompleted}]=await Promise.all([
+    supabase.from("calendar_event_life_areas").select("event_id,event_date,life_area").eq("user_id",user.id).eq("event_date",date),
+    supabase.from("schedule_completions").select("source_id,completion_date").eq("user_id",user.id).eq("completion_date",date).eq("source_type","google"),
+  ]);
   const googleEvents=result.events.filter(event=>event.date===date);
-  const planning=<><div className="schedule-top-google"><GoogleCalendarPanel date={date} events={result.events} connected={Boolean(connection)&&Boolean(result.connected)} needsReconnect={result.needsReconnect} unavailable={result.unavailable} /></div><PlanningClient key="schedule-planning" date={date} todos={todos??[]} priorities={priorities??[]} dumps={dumps??[]} plans={plans??[]} timers={timers??[]} dayStart={settings?.day_starts_at??"07:00"} dayEnd={settings?.day_ends_at??"23:00"} googleEvents={googleEvents} googleConnected={Boolean(connection)&&Boolean(result.connected)} googleNeedsReconnect={result.needsReconnect} googleUnavailable={result.unavailable}/></>;
+  const planning=<><div className="schedule-top-google"><GoogleCalendarPanel date={date} events={result.events} areaRecords={calendarAreas??[]} completedEvents={googleCompleted??[]} connected={Boolean(connection)&&Boolean(result.connected)} needsReconnect={result.needsReconnect} unavailable={result.unavailable} /></div><PlanningClient key="schedule-planning" date={date} todos={todos??[]} priorities={priorities??[]} dumps={dumps??[]} plans={plans??[]} timers={timers??[]} dayStart={settings?.day_starts_at??"07:00"} dayEnd={settings?.day_ends_at??"23:00"} googleEvents={googleEvents} googleConnected={Boolean(connection)&&Boolean(result.connected)} googleNeedsReconnect={result.needsReconnect} googleUnavailable={result.unavailable}/></>;
   const detail=<ScheduleDetailClient key="schedule-detail" date={date} todos={(todos??[]).filter(todo=>todo.planned_date===date)} plans={plans??[]} timers={timers??[]} priorities={priorities??[]} googleEvents={googleEvents} reflection={reflection??null} weekStartsOn={profile.data?.week_starts_on === "sunday" ? "sunday" : "monday"}/>;
   return <AppShell><ScheduleClient date={date} today={today} weekStartsOn={profile.data?.week_starts_on === "sunday" ? "sunday" : "monday"} initial={result} planning={planning} detail={detail} /></AppShell>;
 }
