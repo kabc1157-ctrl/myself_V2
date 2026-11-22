@@ -37,6 +37,21 @@ export async function signIn(_previous: AuthActionState, formData: FormData): Pr
 
 export async function signOut() { const supabase = await createSupabaseServerClient(); await supabase.auth.signOut(); redirect("/auth/login"); }
 
+export async function deleteAccount(formData: FormData) {
+  if (formData.get("confirm") !== "DELETE_ACCOUNT") redirect("/mypage?account=confirm");
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) redirect("/auth/login");
+
+  const { createSupabaseAdminClient } = await import("@/core/supabase/admin");
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(user.id);
+  if (error) redirect("/mypage?account=delete-error");
+
+  await supabase.auth.signOut();
+  redirect("/auth/login?account=deleted");
+}
+
 export async function requestPasswordReset(_previous: AuthActionState, formData: FormData): Promise<AuthActionState> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.resetPasswordForEmail(value(formData, "email"), { redirectTo: callbackUrl("/auth/reset") });
