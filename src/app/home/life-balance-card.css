@@ -1,4 +1,4 @@
-.life-balance-card{margin:0;border:1px solid rgb(88 100 134 / 12%);border-radius:26px;background:#fbf6ef;box-shadow:0 10px 24px rgb(88 100 134 / 6%);padding:0 18px 18px;color:#586486}
+.life-balance-card{margin:0;border:1px solid rgb(88 100 134 / 12%);border-radius:26px;background:#f8f0e5;box-shadow:0 10px 24px rgb(88 100 134 / 6%);padding:0 18px 18px;color:#586486}
 .life-balance-heading{display:flex;width:100%;min-height:74px;align-items:center;justify-content:space-between;gap:12px;padding:0 2px;border:0;border-bottom:1px solid rgb(88 100 134 / 12%);background:transparent;color:#586486;cursor:pointer;text-align:left}
 .life-balance-heading:focus-visible{outline:2px solid rgb(255 190 70 / 70%);outline-offset:-3px;border-radius:18px}
 .life-balance-heading-title{display:inline-flex;min-width:0;align-items:center;gap:10px;font-size:clamp(1.08rem,4.5vw,1.35rem);font-weight:800;letter-spacing:-.05em}
@@ -16,7 +16,7 @@
 .life-balance-filters button{min-height:38px;padding:6px 3px;border:1px solid #ded2c4;border-radius:999px;background:#fbf6ef;color:#586486;cursor:pointer;font:inherit;font-size:.72rem;font-weight:700;white-space:nowrap}
 .life-balance-filters button.selected{border-color:#ffbe46;background:#ffcf7a;color:#42351f;font-weight:800}
 .life-balance-filters button:disabled{cursor:wait;opacity:.6}
-.life-balance-plot{display:flex;min-height:218px;margin-top:14px;padding:14px 10px 10px;border:1px solid rgb(88 100 134 / 12%);border-radius:18px;background:rgb(255 255 255 / 48%)}
+.life-balance-plot{display:flex;min-height:218px;margin-top:14px;padding:14px 10px 10px;border:1px solid rgb(88 100 134 / 12%);border-radius:18px;background:rgb(255 250 242 / 68%)}
 .life-balance-yaxis{display:flex;width:24px;height:160px;flex:0 0 auto;flex-direction:column;justify-content:space-between;padding-right:6px;color:#7e7973;font-size:.7rem;text-align:right}
 .life-balance-columns{display:grid;position:relative;flex:1;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:0 4px;border-bottom:1px solid #d9d2c9}
 .life-balance-column{display:flex;min-width:0;height:184px;flex-direction:column;align-items:center}
