@@ -3,12 +3,11 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
-import { archiveRoutine, createRoutine, deleteDailyRoutineReflection, listArchivedRoutines, restoreRoutine, saveDailyRoutineReflection, toggleRoutineOccurrence, trashRoutine, updateRoutine } from "@/core/records/routine-actions";
+import { archiveRoutine, createRoutine, deleteArchivedRoutine, deleteDailyRoutineReflection, listArchivedRoutines, restoreRoutine, saveDailyRoutineReflection, toggleRoutineOccurrence, trashRoutine, updateRoutine } from "@/core/records/routine-actions";
 import { ActivityCalendar, CollapsibleRecordCard, ProgressRing, RecordDateField, RecordItem, RecordPageHeader } from "@/shared/components/record-kit";
 import { useToast } from "@/shared/components/toast-provider";
-import { LIFE_AREAS, LIFE_AREA_LABELS, type LifeArea } from "@/core/life-balance";
 
-type Routine = { id: string; title: string; period: string; weekdays: number[]; is_active: boolean; archived_at: string | null; life_area: string };
+type Routine = { id: string; title: string; period: string; weekdays: number[]; is_active: boolean; archived_at: string | null };
 type Occurrence = { routine_id: string; status: string; occurrence_date: string };
 type Reflection = { id: string; routine_id: string | null; reflection_date: string; content: string; deleted_at?: string | null };
 type CalendarDay = { date: string; rate: number; completed: number; total: number; hasRoutine: boolean };
@@ -36,13 +35,11 @@ export function RoutineScreen({ date, weekStartsOn = "monday", initialRoutines, 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editPeriod, setEditPeriod] = useState("morning");
-  const [editLifeArea, setEditLifeArea] = useState<LifeArea>("health");
   const [editWeekdays, setEditWeekdays] = useState<number[]>([]);
   const [sortMode, setSortMode] = useState<"time" | "period">("period");
   const [openPeriods, setOpenPeriods] = useState<string[]>(() => initialOpenPeriods(date));
   const [title, setTitle] = useState("");
   const [period, setPeriod] = useState("morning");
-  const [lifeArea, setLifeArea] = useState<LifeArea>("health");
   const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [pending, startTransition] = useTransition();
   void detailReflectionCreating;
@@ -80,11 +77,11 @@ export function RoutineScreen({ date, weekStartsOn = "monday", initialRoutines, 
     showToast("회고를 삭제했어요.", "success");
   });
   const add = () => startTransition(async () => {
-    const result = await createRoutine({ title, period, weekdays, lifeArea });
+    const result = await createRoutine({ title, period, weekdays });
     if (!result.ok || !result.data) return showToast(result.error ?? "저장하지 못했어요.", "error");
     const created = result.data;
-    setRoutines((current) => [...current, { id: created.id, title, period, weekdays, is_active: true, archived_at: null, life_area: lifeArea }]);
-    setTitle(""); setLifeArea("health");
+    setRoutines((current) => [...current, { id: created.id, title, period, weekdays, is_active: true, archived_at: null }]);
+    setTitle("");
     setCreateOpen(false);
     showToast("루틴을 추가했어요.", "success");
   });
@@ -103,11 +100,11 @@ export function RoutineScreen({ date, weekStartsOn = "monday", initialRoutines, 
     if (moved) setArchived((current) => [{ ...moved, archived_at: new Date().toISOString() }, ...current]);
     showToast("루틴을 보관했어요.", "success");
   });
-  const beginEdit = (routine: Routine) => { setEditingId(routine.id); setEditTitle(routine.title); setEditPeriod(routine.period); setEditWeekdays(routine.weekdays); setEditLifeArea((LIFE_AREAS.find(area => area === routine.life_area) ?? "health")); };
+  const beginEdit = (routine: Routine) => { setEditingId(routine.id); setEditTitle(routine.title); setEditPeriod(routine.period); setEditWeekdays(routine.weekdays); };
   const saveEdit = (id: string) => startTransition(async () => {
-    const result = await updateRoutine(id, { title: editTitle, period: editPeriod, weekdays: editWeekdays, lifeArea: editLifeArea });
+    const result = await updateRoutine(id, { title: editTitle, period: editPeriod, weekdays: editWeekdays });
     if (!result.ok) return showToast(result.error ?? "루틴을 수정하지 못했어요.", "error");
-    setRoutines((current) => current.map((item) => item.id === id ? { ...item, title: editTitle, period: editPeriod, weekdays: editWeekdays, life_area: editLifeArea } : item));
+    setRoutines((current) => current.map((item) => item.id === id ? { ...item, title: editTitle, period: editPeriod, weekdays: editWeekdays } : item));
     setEditingId(null);
     showToast("루틴을 수정했어요.", "success");
   });
@@ -118,11 +115,18 @@ export function RoutineScreen({ date, weekStartsOn = "monday", initialRoutines, 
     setRoutines((current) => [...current, { ...routine, is_active: true, archived_at: null }]);
     showToast("루틴을 다시 활성화했어요.", "success");
   });
+  const deleteArchived = (routine: ArchivedRoutine) => startTransition(async () => {
+    if (!window.confirm("보관된 루틴을 바로 삭제할까요? 삭제하면 복구할 수 없어요.")) return;
+    const result = await deleteArchivedRoutine(routine.id);
+    if (!result.ok) return showToast(result.error ?? "루틴을 삭제하지 못했어요.", "error");
+    setArchived((current) => current.filter((item) => item.id !== routine.id));
+    showToast("루틴을 삭제했어요.", "success");
+  });
   const remove = (routine: Routine) => startTransition(async () => {
-    const result = await trashRoutine(routine.id);
-    if (!result.ok) return showToast(result.error ?? "휴지통으로 이동하지 못했어요.", "error");
-    setRoutines((current) => current.filter((item) => item.id !== routine.id));
-    showToast("루틴을 휴지통으로 이동했어요.", "success");
+    const result = await deleteArchivedRoutine(routine.id);
+    if (!result.ok) return showToast(result.error ?? "루틴을 삭제하지 못했어요.", "error");
+    setArchived((current) => current.filter((item) => item.id !== routine.id));
+    showToast("루틴을 삭제했어요.", "success");
   });
   const calendarValues = calendar.map((day) => ({ date: day.date, label: day.rate + "%", progress: { completed: day.completed, total: day.total } }));
   const dateWeekday = new Date(`${date}T00:00:00Z`).getUTCDay();
@@ -142,8 +146,8 @@ export function RoutineScreen({ date, weekStartsOn = "monday", initialRoutines, 
       </div>
     </CollapsibleRecordCard>
     <section className="routine-management"><h2 className="rk-section-title">루틴 관리</h2><CollapsibleRecordCard title="새 루틴 추가" open={createOpen} onOpenChange={setCreateOpen}>
-      <form className="rk-form" onSubmit={(event) => { event.preventDefault(); add(); }}><label>루틴 이름<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="예: 아침 산책" /></label><label>시간대<select value={period} onChange={(event) => setPeriod(event.target.value)}>{periods.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><label>삶 영역 (기본: 건강)<select value={lifeArea} onChange={event => setLifeArea(event.target.value as LifeArea)}>{LIFE_AREAS.map(area => <option key={area} value={area}>{LIFE_AREA_LABELS[area]}</option>)}</select></label><fieldset className="rk-weekdays"><legend>반복 요일</legend>{weekdayOrder.map((index) => <button className={`rk-button ${weekdays.includes(index) ? "primary" : "secondary"}`} key={index} type="button" onClick={() => setWeekdays((current) => current.includes(index) ? current.filter((day) => day !== index) : [...current, index])}>{weekdayLabels[index]}</button>)}</fieldset><button className="rk-button primary" disabled={!title.trim() || pending} type="submit">저장</button></form>
-    </CollapsibleRecordCard><CollapsibleRecordCard title="보관된 루틴" open={archiveOpen} onOpenChange={setArchiveOpen}>{archived.length === 0 ? <p className="rk-empty">보관된 루틴이 없어요.</p> : archived.map((routine) => <RecordItem key={routine.id}><div className="routine-item-row"><span>{routine.title}<small className="routine-meta"> · {weekdayOrder.filter((day) => routine.weekdays.includes(day)).map((day) => weekdayLabels[day]).join("")} · {routine.archived_at?.slice(0, 10) ?? "보관됨"}</small></span><div className="rk-actions"><button className="rk-button secondary" type="button" onClick={() => restore(routine)}>다시 활성화</button><button className="rk-button danger" type="button" onClick={() => remove(routine)}>휴지통</button></div></div></RecordItem>)}</CollapsibleRecordCard><CollapsibleRecordCard title="전체 루틴 관리" open={managementOpen} onOpenChange={setManagementOpen}>{periods.map(([key, label]) => <div className="routine-management-group" key={key}><h3>{label}</h3>{routines.filter((routine) => routine.period === key).map((routine) => <RecordItem key={routine.id}><div className="routine-item-row"><span>{routine.title}<small className="routine-meta"> · {weekdayOrder.filter((day) => routine.weekdays.includes(day)).map((day) => weekdayLabels[day]).join("")}</small><small className="routine-status">활성</small></span><div className="rk-actions"><button className="rk-button secondary" type="button" onClick={() => beginEdit(routine)}>수정</button><button className="rk-button secondary" type="button" onClick={() => archive(routine.id)}>보관</button></div></div>{editingId === routine.id ? <div className="rk-inline-editor"><form className="rk-form" onSubmit={(event) => { event.preventDefault(); saveEdit(routine.id); }}><label>제목<input value={editTitle} onChange={(event) => setEditTitle(event.target.value)} /></label><label>시간대<select value={editPeriod} onChange={(event) => setEditPeriod(event.target.value)}>{periods.map(([periodKey, periodLabel]) => <option key={periodKey} value={periodKey}>{periodLabel}</option>)}</select></label><label>삶 영역<select value={editLifeArea} onChange={event => setEditLifeArea(event.target.value as LifeArea)}>{LIFE_AREAS.map(area => <option key={area} value={area}>{LIFE_AREA_LABELS[area]}</option>)}</select></label><div className="rk-actions"><button className="rk-button primary" type="submit">수정 완료</button><button className="rk-button secondary" type="button" onClick={() => setEditingId(null)}>취소</button></div></form></div> : null}</RecordItem>)}</div>)}</CollapsibleRecordCard></section>
+      <form className="rk-form" onSubmit={(event) => { event.preventDefault(); add(); }}><label>루틴 이름<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="예: 아침 산책" /></label><label>시간대<select value={period} onChange={(event) => setPeriod(event.target.value)}>{periods.map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><fieldset className="rk-weekdays"><legend>반복 요일</legend>{weekdayOrder.map((index) => <button className={`rk-button ${weekdays.includes(index) ? "primary" : "secondary"}`} key={index} type="button" onClick={() => setWeekdays((current) => current.includes(index) ? current.filter((day) => day !== index) : [...current, index])}>{weekdayLabels[index]}</button>)}</fieldset><button className="rk-button primary" disabled={!title.trim() || pending} type="submit">저장</button></form>
+    </CollapsibleRecordCard><CollapsibleRecordCard title="보관된 루틴" open={archiveOpen} onOpenChange={setArchiveOpen}>{archived.length === 0 ? <p className="rk-empty">보관된 루틴이 없어요.</p> : archived.map((routine) => <RecordItem key={routine.id}><div className="routine-item-row"><span>{routine.title}<small className="routine-meta"> · {weekdayOrder.filter((day) => routine.weekdays.includes(day)).map((day) => weekdayLabels[day]).join("")} · {routine.archived_at?.slice(0, 10) ?? "보관됨"}</small></span><div className="rk-actions"><button className="rk-button secondary" type="button" onClick={() => restore(routine)}>다시 활성화</button><button className="rk-button danger" type="button" onClick={() => remove(routine)}>휴지통</button></div></div></RecordItem>)}</CollapsibleRecordCard><CollapsibleRecordCard title="전체 루틴 관리" open={managementOpen} onOpenChange={setManagementOpen}>{periods.map(([key, label]) => <div className="routine-management-group" key={key}><h3>{label}</h3>{routines.filter((routine) => routine.period === key).map((routine) => <RecordItem key={routine.id}><div className="routine-item-row"><span>{routine.title}<small className="routine-meta"> · {weekdayOrder.filter((day) => routine.weekdays.includes(day)).map((day) => weekdayLabels[day]).join("")}</small><small className="routine-status">활성</small></span><div className="rk-actions"><button className="rk-button secondary" type="button" onClick={() => beginEdit(routine)}>수정</button><button className="rk-button secondary" type="button" onClick={() => archive(routine.id)}>보관</button></div></div>{editingId === routine.id ? <div className="rk-inline-editor"><form className="rk-form" onSubmit={(event) => { event.preventDefault(); saveEdit(routine.id); }}><label>제목<input value={editTitle} onChange={(event) => setEditTitle(event.target.value)} /></label><label>시간대<select value={editPeriod} onChange={(event) => setEditPeriod(event.target.value)}>{periods.map(([periodKey, periodLabel]) => <option key={periodKey} value={periodKey}>{periodLabel}</option>)}</select></label><div className="rk-actions"><button className="rk-button primary" type="submit">수정 완료</button><button className="rk-button secondary" type="button" onClick={() => setEditingId(null)}>취소</button></div></form></div> : null}</RecordItem>)}</div>)}</CollapsibleRecordCard></section>
     <section className="routine-execution"><div className="routine-execution-heading"><h2 className="rk-section-title">오늘의 루틴</h2><select aria-label="루틴 정렬" value={sortMode} onChange={(event) => setSortMode(event.target.value as "time" | "period")}><option value="period">시간대순</option><option value="time">시간순</option></select></div><section className="rk-list routine-groups" aria-label="시간대별 루틴">{periods.map(([key, label]) => <CollapsibleRecordCard key={key} title={`${label} 루틴 · ${sortedRoutines.filter((routine) => routine.period === key && routine.is_active && occurrences.some((item) => item.routine_id === routine.id && item.status === "completed")).length}/${sortedRoutines.filter((routine) => routine.period === key && routine.is_active).length}`} open={openPeriods.includes(key)} onOpenChange={(nextOpen) => setOpenPeriods((current) => nextOpen ? [...new Set([...current, key])] : current.filter((item) => item !== key))}>{sortedRoutines.filter((routine) => routine.period === key && routine.is_active).map((routine) => { const done = occurrences.some((item) => item.routine_id === routine.id && item.status === "completed"); return <RecordItem key={routine.id}><div className={`routine-item-row${done ? " is-complete" : ""}`}><label className="routine-check"><input type="checkbox" checked={done} onChange={() => toggle(routine)} /><span>{routine.title}<small className="routine-meta"> · {label}</small></span></label><div className="rk-actions"><button className="rk-button secondary" type="button" onClick={() => beginEdit(routine)}>수정</button><button className="rk-button secondary" type="button" onClick={() => archive(routine.id)}>보관</button></div></div></RecordItem>; })}</CollapsibleRecordCard>)}</section></section>
     <ActivityCalendar month={date.slice(0, 7)} selectedDate={date} values={calendarValues} onDateSelect={go} onMonthChange={(nextMonth) => go(`${nextMonth}-01`)} title="루틴 기록" />
     <section className="rk-list routine-detail" aria-label={`${date} 루틴 상세`}><h2 className="rk-detail-title">{date} 루틴 상세</h2><p className="routine-detail-rate">완료율 {dailyRoutines.length ? Math.round(todayCompleted / dailyRoutines.length * 100) : 0}%</p><div className="routine-reflection-detail"><h3>루틴 회고</h3>{dailySaved ? <><p className="rk-original-text">{dailyContent}</p>{detailReflectionEditing ? <div className="rk-inline-editor"><textarea value={dailyContent} onChange={(event) => setDailyContent(event.target.value)} /><div className="rk-actions"><button className="rk-button primary" type="button" disabled={pending} onClick={saveReflection}>수정 완료</button><button className="rk-button secondary" type="button" onClick={() => { setDailyContent(reflectionOriginal); setDetailReflectionEditing(false); setDetailReflectionCreating(false); }}>취소</button></div></div> : <div className="rk-actions"><button className="rk-button secondary" type="button" onClick={() => { setReflectionOpen(false); setReflectionOriginal(dailyContent); setDetailReflectionEditing(true); setDetailReflectionCreating(false); }}>수정</button><button className="rk-button danger" type="button" disabled={pending} onClick={removeReflection}>삭제</button></div>}</> : <><p className="rk-empty">작성된 루틴 회고가 없어요.</p>{detailReflectionEditing ? <div className="rk-inline-editor"><textarea value={dailyContent} onChange={(event) => setDailyContent(event.target.value)} placeholder="오늘의 루틴 회고를 적어보세요." /><div className="rk-actions"><button className="rk-button primary" type="button" disabled={pending} onClick={saveReflection}>저장</button><button className="rk-button secondary" type="button" onClick={() => { setDailyContent(""); setDetailReflectionEditing(false); setDetailReflectionCreating(false); }}>취소</button></div></div> : <button className="rk-button secondary" type="button" onClick={() => { setReflectionOpen(false); setDailyContent(""); setDetailReflectionCreating(true); setDetailReflectionEditing(true); }}>회고 작성</button>}</>}</div><details open><summary>완료한 루틴</summary>{dailyRoutines.filter((routine) => occurrences.some((item) => item.routine_id === routine.id && item.status === "completed")).map((routine) => <label className="rk-detail-row routine-detail-check" key={routine.id}><input type="checkbox" checked onChange={() => toggle(routine)} /><span>{routine.title}</span></label>)}{dailyRoutines.filter((routine) => occurrences.some((item) => item.routine_id === routine.id && item.status === "completed")).length === 0 ? <p className="rk-empty">완료한 루틴이 없어요.</p> : null}</details><details open><summary>미완료 루틴</summary>{dailyRoutines.filter((routine) => !occurrences.some((item) => item.routine_id === routine.id && item.status === "completed")).map((routine) => <label className="rk-detail-row routine-detail-check" key={routine.id}><input type="checkbox" checked={false} onChange={() => toggle(routine)} /><span>{routine.title}</span></label>)}{dailyRoutines.filter((routine) => !occurrences.some((item) => item.routine_id === routine.id && item.status === "completed")).length === 0 ? <p className="rk-empty">미완료 루틴이 없어요.</p> : null}</details></section>
