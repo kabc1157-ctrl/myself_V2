@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ASSESSMENT_ITEMS, PERSONALITY_ASSESSMENT_VERSION } from "./questions";
 import { completePersonalityAssessment } from "./actions";
-import { createPersonalityReport } from "./report";
+import { createPersonalityReportV2 } from "./report-v2";
 
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
-vi.mock("@/core/personality/snapshot", () => ({ isPersonalityReportSnapshot: mocks.snapshotValid }));
+vi.mock("@/core/personality/snapshot-v2", () => ({ isPersonalityReportV2: mocks.snapshotValid }));
 vi.mock("@/core/supabase/server", () => ({
   createSupabaseServerClient: async () => ({
     auth: { getUser: mocks.getUser },
@@ -49,7 +49,7 @@ describe("completePersonalityAssessment", () => {
   });
 
   it("saves server-derived scores and report together in the completion write", async () => {
-    const expected = createPersonalityReport(answers);
+    const expected = createPersonalityReportV2(answers);
     expect(await completePersonalityAssessment(answers)).toEqual({ ok: true });
     expect(mocks.update).toHaveBeenCalledTimes(1);
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
