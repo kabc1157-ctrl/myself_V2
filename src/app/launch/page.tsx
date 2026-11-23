@@ -8,12 +8,8 @@ export default function LaunchPage() {
   const router = useRouter();
   useEffect(() => {
     router.prefetch("/home");
-    const key = "ieumsae-launch-seen";
-    let seen = false;
-    try { seen = window.localStorage.getItem(key) === "1"; window.localStorage.setItem(key, "1"); } catch { /* storage is optional */ }
     let cancelled = false;
     const navigate = async () => {
-      if (!seen) await new Promise((resolve) => window.setTimeout(resolve, 620));
       try { await fetch("/home", { cache: "no-store", credentials: "include" }); } catch { /* navigation remains the fallback */ }
       if (!cancelled) router.replace("/home");
     };
